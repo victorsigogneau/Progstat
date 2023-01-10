@@ -153,15 +153,16 @@ app.layout = html.Div([
     State('input-on-submit', 'value')
 
 )
-#Retourne le nom du corpus(value) , ne nombre de mots dans le corpus(nombre_de_mot) l'affichage du df(word,term_frequency,document_frequency
+#Retourne le nom du corpus(value) , le nombre de mots dans le corpus(nombre_de_mot) l'affichage du df(word,term_frequency,document_frequency
 def update_output(n_clicks, value):
     CorpusInput = CorpusObjet.load(value + ".pkl")
     nom = CorpusInput.get_name()
     table2=CorpusInput.stat(3)
     txt=CorpusInput.texteComplet()
     nombre_de_mot =len(txt)
+    nombre_de_doc=CorpusInput.get_ndoc()
     return html.Div([
-        html.H4('Vous avez choisi le corpus : {} avec un total de {} mots'.format(nom,nombre_de_mot)),
+        html.H4('Vous avez choisi le corpus : {} avec un total de {} mots pour {} documents'.format(nom,nombre_de_mot,nombre_de_doc)),
         dash_table.DataTable(
             id='table',
             columns=[{"name": i, "id": i} for i in table2.columns],

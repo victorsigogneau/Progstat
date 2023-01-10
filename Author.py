@@ -4,7 +4,7 @@ class Author:
         self.ndoc = ndoc #nombre de documents publiés
         self.production = production #dictionnaire des documents écris par l'auteur
 
-    #Indente la variable le nombre de document
+    #Indente la variable ndoc(nombre de documents publiés)
     def add(self, document):
         self.production[self.ndoc] = document
         self.ndoc += 1
