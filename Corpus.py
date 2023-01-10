@@ -102,7 +102,7 @@ class Corpus:
         chaine=chaine.split()
         return chaine
 
-    #Donne le nombre de mots uniques et les n mots les plus fréquents
+    #Donne le nombre de mots uniques et les n mots les plus fréquents et leur frequence dans les documents
     def stat(self,n):
         #nb de mots uniques
         txt=self.textEntier

@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on 08/05/2020
-
-@author: julien and antoine
-"""
-
-# needs praw package, cf.:
-# https://towardsdatascience.com/scraping-reddit-data-1c0af3040768
 import praw
 import Document
 from Author import Author
@@ -16,10 +6,12 @@ from Corpus import Corpus
 import pandas as pd
 import dash
 
+#Utilise les API reddit et arxiv pour créer des documents et remplir un objet corpus
+
 id2Doc = {}
 indice = 0
 id2Auth = {}
-
+"""
 # API Reddit
 reddit = praw.Reddit(client_id='eFffkL5lzdTbtcPUUipKXw', client_secret='taZ5t60V6huKTps1UTlDvhrl4JLo5A', user_agent='td3')
 subr = reddit.subreddit('Saturn')
@@ -88,13 +80,8 @@ for d in docs:
 
 
 corpus = textes_Reddit + textes_Arxiv
+#Longueur du corpus
 print("Longueur du corpus : " + str(len(corpus)))
-
-for doc in corpus:
-    # nombre de phrases
-    print("Nombre de phrases : " + str(len(doc.split("."))))
-    print("Nombre de mots : " + str(len(doc.split(" "))))
-
 import numpy as np
 #Nombre de phrases dans le corpus
 nb_phrases = [len(doc.split(".")) for doc in corpus]
@@ -103,24 +90,26 @@ print("Moyenne du nombre de phrases : " + str(np.mean(nb_phrases)))
 nb_mots = [len(doc.split(" ")) for doc in corpus]
 print("Moyenne du nombre de mots : " + str(np.mean(nb_mots)))
 print("Nombre total de mots dans le corpus : " + str(np.sum(nb_mots)))
-
-
+"""
+#Création d'un objet Corpus
 CorpusObjet = Corpus("Saturn", id2Auth, id2Doc)
-#trie le corpus par data
-CorpusObjet.trie_date(3)
-#trie le corpus par titre
-CorpusObjet.trie_titre(4)
-
+#charge le corpus
+CorpusObjet=CorpusObjet.load("Saturn.pkl")
+#trie le corpus par date et print les six premieres
+CorpusObjet.trie_date(6)
+#trie le corpus par titre et print les six premiers
+CorpusObjet.trie_titre(6)
 #Sauvegarde le Corpus
-CorpusObjet.save("Saturn.pkl")
+CorpusObjet.save("test.pkl")
 
-#Charge le corpus
-bowling=CorpusObjet.load("MachineLearning.pkl")
+#retourne les phrases qui contiennt le mot saturn
+print(CorpusObjet.search("Saturn"))
 
-print(CorpusObjet.search("planet"))
+#Data frame ou le mot Saturn apparait on retrouve les 5 caracteres a droite et a gauche
+a=CorpusObjet.concorde("Saturn",5)
+a.to_csv('concorde_saturne.csv',index=False)
 
-a=CorpusObjet.concorde("planet",5)
-
+#Affiche les 5 premieres lignes du DF(word, term_frequency, document_frequency
 b=CorpusObjet.stat(5)
 
 
@@ -142,7 +131,7 @@ app.layout = html.Div([
     }
     ),
     html.Div(dcc.Input(id='input-on-submit', type='text')),
-    html.Button('Submit', id='submit-val', n_clicks=0),
+    html.Button('Valider', id='submit-val', n_clicks=0),
     html.Div(id='container-button-basic',children="Entrez le nom d un corpus")
 ])
 
@@ -153,7 +142,7 @@ app.layout = html.Div([
     State('input-on-submit', 'value')
 
 )
-#Retourne le nom du corpus(value) , le nombre de mots dans le corpus(nombre_de_mot) l'affichage du df(word,term_frequency,document_frequency
+#Retourne le nom du corpus(value) , le nombre de mots dans le corpus(nombre_de_mot) et le nombre de document(nombre_de_doc) l'affichage du df(word,term_frequency,document_frequency
 def update_output(n_clicks, value):
     CorpusInput = CorpusObjet.load(value + ".pkl")
     nom = CorpusInput.get_name()
