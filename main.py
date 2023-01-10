@@ -1,4 +1,7 @@
-#test
+#####################################################
+# Programmation Statistique                         #
+# Réalisé par Albane Nicoullaud et Victor Sigogneau #
+#####################################################
 import praw
 import Document
 from Author import Author
