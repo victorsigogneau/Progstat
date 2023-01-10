@@ -122,7 +122,7 @@ class Corpus:
         freq=freq.reset_index()
         freq=freq.rename(columns={'index': 'word'})
         freq = freq.sort_values(by='term_frequency', ascending=False)
-        print (f"Il y a {nbMotUnique} mots uniques et les mots des plus fréquents sont \n {freq[0:5]}")
+        print (f"Il y a {nbMotUnique} mots uniques et les mots des plus fréquents sont \n {freq[0:n]}")
         return freq
 
 

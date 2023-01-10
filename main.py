@@ -22,10 +22,10 @@ id2Auth = {}
 
 # API Reddit
 reddit = praw.Reddit(client_id='eFffkL5lzdTbtcPUUipKXw', client_secret='taZ5t60V6huKTps1UTlDvhrl4JLo5A', user_agent='td3')
-subr = reddit.subreddit('space')
+subr = reddit.subreddit('Saturn')
 textes_Reddit = []
 #Parours 100 post Reddit
-for post in subr.hot(limit=100):
+for post in subr.hot(limit=10):
     # for post in subr.controversial(limit=10):
     texte = post.title
     texte = texte.replace("\n", " ")
@@ -35,11 +35,11 @@ for post in subr.hot(limit=100):
     id2Doc[indice] = dReddit
     indice += 1
 
-    if not (post.author.name in id2Auth):
+    if (post.author.name not in id2Auth):
         aReddit = Author(post.author.name, 0, {})
         aReddit.add(dReddit)
         id2Auth[post.author.name] = aReddit
-    if (post.author.name in id2Auth):
+    else:
         aReddit = id2Auth.get(post.author.name)
         #ajoute un article ecrit a l'auteur dans la classe author
         aReddit.add(dReddit)
@@ -50,7 +50,7 @@ import xmltodict
 
 #API Arxiv
 textes_Arxiv = []
-query = "space"
+query = "Saturn"
 url = 'http://export.arxiv.org/api/query?search_query=all:' + query + '&start=0&max_results=100'
 url_read = urllib.request.urlopen(url).read()
 data = url_read.decode()
@@ -105,31 +105,23 @@ print("Moyenne du nombre de mots : " + str(np.mean(nb_mots)))
 print("Nombre total de mots dans le corpus : " + str(np.sum(nb_mots)))
 
 
-CorpusObjet = Corpus("space", id2Auth, id2Doc)
+CorpusObjet = Corpus("Saturn", id2Auth, id2Doc)
 #trie le corpus par data
 CorpusObjet.trie_date(3)
 #trie le corpus par titre
 CorpusObjet.trie_titre(4)
 
 #Sauvegarde le Corpus
-CorpusObjet.save("space.pkl")
+CorpusObjet.save("Saturn.pkl")
 
 #Charge le corpus
-bowling=CorpusObjet.load("bowling.pkl")
+bowling=CorpusObjet.load("MachineLearning.pkl")
 
 print(CorpusObjet.search("planet"))
 
 a=CorpusObjet.concorde("planet",5)
 
-a.to_csv('output.csv', index=False)
-
 b=CorpusObjet.stat(5)
-b.to_csv('output2.csv', index=False)
-
-
-
-
-
 
 
 
@@ -161,12 +153,12 @@ app.layout = html.Div([
     State('input-on-submit', 'value')
 
 )
-#Retourne le nom du corpus(value) et l'affichage du df(word,term_frequency,document_frequency
+#Retourne le nom du corpus(value) , ne nombre de mots dans le corpus(nombre_de_mot) l'affichage du df(word,term_frequency,document_frequency
 def update_output(n_clicks, value):
-    bowling = CorpusObjet.load(value + ".pkl")
-    nom = bowling.get_name()
-    table2=bowling.stat(3)
-    txt=bowling.texteComplet()
+    CorpusInput = CorpusObjet.load(value + ".pkl")
+    nom = CorpusInput.get_name()
+    table2=CorpusInput.stat(3)
+    txt=CorpusInput.texteComplet()
     nombre_de_mot =len(txt)
     return html.Div([
         html.H4('Vous avez choisi le corpus : {} avec un total de {} mots'.format(nom,nombre_de_mot)),
