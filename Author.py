@@ -1,3 +1,4 @@
+#Classe auteur
 class Author:
     def __init__(self, name, ndoc, production):
         self.name = name #nom auteur

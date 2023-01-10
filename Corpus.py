@@ -11,7 +11,7 @@ def singleton(Corpus):
         return instances[0]
     return wrapper
 
-#@singleton ici en commentaire probleme de compatibilité avec pickle
+#@singleton ici en commentaire probleme de compatibilité avec pickle pour la classe corpus
 class Corpus:
     def __init__(self, nom, authors, id2doc):
         self.nom = nom #nom du corpus

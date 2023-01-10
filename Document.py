@@ -1,4 +1,4 @@
-
+#Class qui genere un document de classe fille soit reddit soit arxiv
 class DocumentGenerator:
     @staticmethod
     #Suivant le champ type créer un Document de type Arxiv ou Reddit si il est incconu retourne une erreur
