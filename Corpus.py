@@ -11,7 +11,7 @@ def singleton(Corpus):
         return instances[0]
     return wrapper
 
-@singleton
+#@singleton
 class Corpus:
     def __init__(self, nom, authors, id2doc):
         self.nom = nom #nom du corpus
@@ -21,6 +21,10 @@ class Corpus:
         self.naut = len(authors) #comptage des auteurs
         self.textEntier = self.texteComplet() #concatenation de tous les textes du corpus
 
+    #Donne le nom du corpus
+    def get_name(self):
+        return self.nom
+    #affiche le nom du corpus de façon plus digeste
     def __repr__(self):
         return "Le theme du Corpus est : " + self.name
 
@@ -93,6 +97,7 @@ class Corpus:
         chaine=chaine.split()
         return chaine
 
+    #Donne le nombre de mots uniques et les n mots les plus fréquents
     def stat(self,n):
         #nb de mots uniques
         txt=self.textEntier
@@ -113,15 +118,11 @@ class Corpus:
                     word_count[word]["term_frequency"] = 1
                     word_count[word]["document_frequency"] = 1
                     nombre_de_doc=True
-
-        print(word_count)
-        #Transforme le dico word_count en un DF(mot/{t_f,d_f})
         freq = pd.DataFrame.from_dict(word_count, orient='index')
         freq=freq.reset_index()
-        #freq=pd.DataFrame(word_count,columns=['mot','term_frequency', 'document_frequency'])
-
-        print (f"Il y a {nbMotUnique} mots uniques et les mots des plus fréquents sont ")
-
+        freq=freq.rename(columns={'index': 'word'})
+        freq = freq.sort_values(by='term_frequency', ascending=False)
+        print (f"Il y a {nbMotUnique} mots uniques et les mots des plus fréquents sont \n {freq[0:5]}")
         return freq
 
 

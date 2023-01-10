@@ -14,17 +14,17 @@ from Author import Author
 import datetime
 from Corpus import Corpus
 import pandas as pd
+import dash
 
 id2Doc = {}
 indice = 0
 id2Auth = {}
 
-# Reddit
-
+# API Reddit
 reddit = praw.Reddit(client_id='eFffkL5lzdTbtcPUUipKXw', client_secret='taZ5t60V6huKTps1UTlDvhrl4JLo5A', user_agent='td3')
-subr = reddit.subreddit('Space')
+subr = reddit.subreddit('space')
 textes_Reddit = []
-#auteurs_Reddit = []
+#Parours 100 post Reddit
 for post in subr.hot(limit=100):
     # for post in subr.controversial(limit=10):
     texte = post.title
@@ -48,16 +48,14 @@ for post in subr.hot(limit=100):
 import urllib.request
 import xmltodict
 
+#API Arxiv
 textes_Arxiv = []
-
 query = "space"
 url = 'http://export.arxiv.org/api/query?search_query=all:' + query + '&start=0&max_results=100'
 url_read = urllib.request.urlopen(url).read()
-
-# url_read est un "byte stream" qui a besoin d'être décodé
 data = url_read.decode()
-
-dico = xmltodict.parse(data)  # xmltodict permet d'obtenir un objet ~JSON
+#Transformation en un objet json
+dico = xmltodict.parse(data)
 docs = dico['feed']['entry']
 for d in docs:
     texte = d['title'] + ". " + d['summary']
@@ -70,7 +68,6 @@ for d in docs:
     # S'il y a plusieurs auteurs
     if len(d["author"]) > 1:
         for auth in d["author"]:
-            # print(auth.get("name"))
             if not (auth.get("name") in id2Auth):
                 aArxiv = Author(auth.get("name"), 0, {})
                 aArxiv.add(dArxiv)
@@ -91,8 +88,6 @@ for d in docs:
 
 
 corpus = textes_Reddit + textes_Arxiv
-
-# print("Corpus length: %d" % len(corpus))
 print("Longueur du corpus : " + str(len(corpus)))
 
 for doc in corpus:
@@ -101,49 +96,87 @@ for doc in corpus:
     print("Nombre de mots : " + str(len(doc.split(" "))))
 
 import numpy as np
-
+#Nombre de phrases dans le corpus
 nb_phrases = [len(doc.split(".")) for doc in corpus]
 print("Moyenne du nombre de phrases : " + str(np.mean(nb_phrases)))
-
+#Nombre de mots dans le corpus et moyenne de mots
 nb_mots = [len(doc.split(" ")) for doc in corpus]
 print("Moyenne du nombre de mots : " + str(np.mean(nb_mots)))
-
 print("Nombre total de mots dans le corpus : " + str(np.sum(nb_mots)))
 
-corpus_plus100 = [doc for doc in corpus if len(doc) > 100]
 
-chaine_unique = " ".join(corpus_plus100)
+CorpusObjet = Corpus("space", id2Auth, id2Doc)
+#trie le corpus par data
+CorpusObjet.trie_date(3)
+#trie le corpus par titre
+CorpusObjet.trie_titre(4)
 
-import pickle
+#Sauvegarde le Corpus
+CorpusObjet.save("space.pkl")
 
-with open("out.pkl", "wb") as f:
-    pickle.dump(corpus_plus100, f)
+#Charge le corpus
+bowling=CorpusObjet.load("bowling.pkl")
 
-with open("out.pkl", "rb") as f:
-    corpus_plus100 = pickle.load(f)
+print(CorpusObjet.search("planet"))
 
-import datetime
-
-aujourdhui = datetime.datetime.now()
-print(aujourdhui)
-
-c = Corpus("Corpus", id2Auth, id2Doc)
-c.trie_date(3)
-c.trie_titre(4)
-
-for doc in c.id2doc.values():
-    print(doc.affichage())
-
-for i in range(len(id2Doc)):
-    print(id2Doc[i].getType())
-
-print(c.search("planet"))
-
-a=c.concorde("planet",5)
+a=CorpusObjet.concorde("planet",5)
 
 a.to_csv('output.csv', index=False)
 
-b=c.stat(5)
+b=CorpusObjet.stat(5)
 b.to_csv('output2.csv', index=False)
 
+
+
+
+
+
+
+
+#Interface graphique Dash
+from dash import Dash, dcc, html, Input, Output, State, dash_table
+app = Dash(__name__)
+
+app.layout = html.Div([
+    html.H1("Outil de recherche article Reddit et Arxiv",
+        style = {
+            'font-family': 'Verdana, sans-serif',
+            'font-size': '30px',
+            'color': 'white',
+            'text-align' : 'center',
+            'border': '2px solid black',
+            'background-color' : 'black'
+
+    }
+    ),
+    html.Div(dcc.Input(id='input-on-submit', type='text')),
+    html.Button('Submit', id='submit-val', n_clicks=0),
+    html.Div(id='container-button-basic',children="Entrez le nom d un corpus")
+])
+
+
+@app.callback(
+    Output('container-button-basic', 'children'),
+    Input('submit-val', 'n_clicks'),
+    State('input-on-submit', 'value')
+
+)
+#Retourne le nom du corpus(value) et l'affichage du df(word,term_frequency,document_frequency
+def update_output(n_clicks, value):
+    bowling = CorpusObjet.load(value + ".pkl")
+    nom = bowling.get_name()
+    table2=bowling.stat(3)
+    txt=bowling.texteComplet()
+    nombre_de_mot =len(txt)
+    return html.Div([
+        html.H4('Vous avez choisi le corpus : {} avec un total de {} mots'.format(nom,nombre_de_mot)),
+        dash_table.DataTable(
+            id='table',
+            columns=[{"name": i, "id": i} for i in table2.columns],
+            data=table2.to_dict("rows"),
+        )
+    ])
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
 
